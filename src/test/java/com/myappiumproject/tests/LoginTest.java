@@ -2,9 +2,6 @@ package com.myappiumproject.tests;
 
 import com.myappiumproject.base.Driver;
 import com.myappiumproject.pages.LoginPage;
-//import io.appium.java_client.MobileElement;
-import io.appium.java_client.AppiumDriver;
-import org.openqa.selenium.WebElement;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;

@@ -1,31 +1,16 @@
 package com.myappiumproject.base;
 
-//import io.appium.java_client.MobileElement;
-
-import com.myappiumproject.pages.LoginPage;
 import org.openqa.selenium.WebElement;
-
 import io.appium.java_client.android.AndroidDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.interactions.Pause;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import com.google.common.collect.ImmutableMap;
-import org.openqa.selenium.remote.RemoteWebElement;
-
-import io.appium.java_client.TouchAction;
-import io.appium.java_client.android.AndroidDriver;
-import io.appium.java_client.touch.WaitOptions;
-import io.appium.java_client.touch.offset.PointOption;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.Point;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import io.appium.java_client.touch.offset.PointOption;
-import org.openqa.selenium.Rectangle;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.time.Duration;
@@ -105,10 +90,10 @@ public class Base {
         Point tapPoint = new Point(x, y);  // 763, 1965
         Sequence tap = new Sequence(finger, 1);
         tap.addAction(finger.createPointerMove(Duration.ofMillis(0),
-                PointerInput.Origin.viewport(), tapPoint.x, tapPoint.y))
-        .addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()))
-        .addAction(new Pause(finger, Duration.ofMillis(50)))
-        .addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+                        PointerInput.Origin.viewport(), tapPoint.x, tapPoint.y))
+                .addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()))
+                .addAction(new Pause(finger, Duration.ofMillis(50)))
+                .addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         driver.perform(Arrays.asList(tap));
     }
 
