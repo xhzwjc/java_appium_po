@@ -35,7 +35,7 @@ public class AppiumDriver_jiu {
             driver = new AndroidDriver(url, caps);
 
         }
-        System.out.println("111111111111111111");
+        System.out.println("测试git remote set-url origin https://github.com/xhzwjc/java_appium_po.git之后的代码");
         return driver;
     }
 
