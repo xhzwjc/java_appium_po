@@ -47,7 +47,6 @@ public class AppiumDriver_jiu {
         if (driver != null) {
             driver.quit();
             driver = null;
-            System.out.println("android测试");
         }
     }
 }
