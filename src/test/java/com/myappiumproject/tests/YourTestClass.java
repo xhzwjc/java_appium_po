@@ -17,8 +17,8 @@ public class YourTestClass {
     @Test
     public void yourTest() {
         // 在这里编写您的测试代码
+        // 在这里编写您的测试代码
     }
-
     @AfterTest
     public void tearDown() {
         Driver.getInstance().quit();
