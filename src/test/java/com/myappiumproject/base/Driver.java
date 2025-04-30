@@ -1,69 +1,80 @@
 package com.myappiumproject.base;
 
+import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 
 public class Driver {
-    // 声明一个静态的 AppiumDriver 对象，用于管理驱动程序
-    private static AndroidDriver androidDriver;
-    // 声明一个静态的 Driver 对象，用于获取单例实例
-    private static Driver driver;
+    private static AppiumDriver driver; // ✅ 统一 AppiumDriver，不再分安卓和iOS
+    private static Driver instance;
 
-    // 私有构造方法，确保只能在类内部实例化
+    // 这里控制平台，建议后续用 config 文件或 system property 替代
+    private static final String PLATFORM = "iOS"; // 👉 切换 Android 或 iOS
+
     private Driver() {}
 
-    // 获取单例实例的方法
     public static Driver getInstance() {
-        // 如果 driver 对象为空，则创建一个新的 Driver 实例并赋值给 driver
-        if (driver == null) {
-            driver = new Driver();
+        if (instance == null) {
+            instance = new Driver();
         }
-        // 返回 driver 实例
-        return driver;
+        return instance;
     }
 
-    // 启动 Appium 驱动程序的方法
-    public AndroidDriver start() {
-        // 如果 appiumDriver 对象为空，则进行初始化
-        if (androidDriver == null) {
-            // 创建一个 DesiredCapabilities 对象，用于设置 Appium 启动参数
+    public AppiumDriver start() {
+        if (driver == null) {
             DesiredCapabilities caps = new DesiredCapabilities();
-            caps.setCapability("deviceName", "RFCT420QSDF"); // 设置设备名称
-            caps.setCapability("platformName", "Android"); // 设置平台名称为 Android
-            caps.setCapability("appPackage", "com.house.user"); // 设置应用的包名
-            caps.setCapability("appActivity", "com.house.user.MainActivity"); // 设置应用的启动 Activity
-            caps.setCapability("automationName", "UiAutomator2"); // 设置自动化引擎为 UiAutomator2
-
-            // 定义 Appium 服务器的 URL
             URL url = null;
+
             try {
-                url = new URL("http://127.0.0.1:4723/"); // 设置 Appium 服务器的地址
+                url = new URL("http://127.0.0.1:4723/");
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
 
-            // 初始化 Android 驱动程序并将实例赋值给 appiumDriver
-            androidDriver = new AndroidDriver(url, caps);
+            if ("Android".equalsIgnoreCase(PLATFORM)) {
+                System.out.println("这是android");
+                caps.setCapability("platformName", "Android");
+                caps.setCapability("deviceName", "RFCT420QSDF");
+                caps.setCapability("appPackage", "com.house.user");
+                caps.setCapability("appActivity", "com.house.user.MainActivity");
+                caps.setCapability("automationName", "UiAutomator2");
 
-//            try {
-//                Thread.sleep(5000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+                driver = new AndroidDriver(url, caps);
+            } else if ("iOS".equalsIgnoreCase(PLATFORM)) {
+                System.out.println("这是iOS");
+                caps.setCapability("platformName", "iOS");
+                caps.setCapability("deviceName", "iPhone12");
+                caps.setCapability("platformVersion", "17.5.1");
+                caps.setCapability("automationName", "XCUITest");
+                caps.setCapability("bundleId", "com.2house.service.house");
+                caps.setCapability("udid", "00008101-001879001AC0001E");
+                caps.setCapability("noReset", false);
+                caps.setCapability("useNewWDA", false);
+                caps.setCapability("usePrebuiltWDA", true);
+                caps.setCapability("shouldStartWDA", false);
+                caps.setCapability("showXcodeLog", true);
+                caps.setCapability("showIOSLog", true);
+                caps.setCapability("xcodeOrgId", "V5C9YMA3NY");
+                caps.setCapability("xcodeSigningId", "iPhone Developer");
+                caps.setCapability("wdaLocalPort", 8100);
 
+                driver = new IOSDriver(url, caps);
+            } else {
+                throw new RuntimeException("平台不支持: " + PLATFORM);
+            }
         }
-        // 返回 appiumDriver 实例
-        return androidDriver;
+
+        return driver;
     }
 
-    // 停止并退出 Appium 驱动程序的方法
     public void quit() {
-        // 如果 appiumDriver 对象不为空，则执行退出操作
-        if (androidDriver != null) {
-            androidDriver.quit(); // 退出驱动程序
-            androidDriver = null; // 将 appiumDriver 置为空，释放资源
+        if (driver != null) {
+            driver.quit();
+            driver = null;
         }
     }
 }

@@ -1,77 +1,141 @@
 package com.myappiumproject.base;
 
+import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.WebElement;
-import io.appium.java_client.android.AndroidDriver;
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.interactions.Pause;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
-import com.google.common.collect.ImmutableMap;
-import org.openqa.selenium.By;
+import org.openqa.selenium.remote.RemoteWebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import com.google.common.collect.ImmutableMap;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.time.Duration;
-import java.util.Arrays;
+import java.util.*;
 
 public class Base {
-    protected AndroidDriver driver;
+    protected AppiumDriver driver;
     protected WebDriverWait wait;
 
-    public Base(AndroidDriver driver) {
+    public Base(AppiumDriver driver) {
         this.driver = driver;
-//        this.wait = new WebDriverWait(driver,Duration.ofSeconds(10));
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
+//    protected void clickWithWait(By locator) {
+//        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
+//        element.click();
+//    }
 
-    // 点击元素并添加显示等待
-    protected void clickWithWait(By locator) {
-        WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-//        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(driver.findElement(locator)));
-        element.click();
-    }
-
-    // 在元素上输入文本
     protected void type(By locator, String text) {
         WebElement element = driver.findElement(locator);
         element.click();
         element.sendKeys(text);
     }
 
-//    protected void swipe(int startX, int startY, int endX, int endY) {
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("startX", startX);
-//        params.put("startY", startY);
-//        params.put("endX", endX);
-//        params.put("endY", endY);
-//        ((JavascriptExecutor) driver).executeScript("mobile: swipeGesture", params);
-//    }
 
+        // 点击元素并添加显示等待
+    protected void clickWithWait(By locator) {
+        // 增强的等待条件：同时检查可见性和可点击性
+        WebElement element = wait.until(driver -> {
+            WebElement el = driver.findElement(locator);
+            return (el.isDisplayed() && el.isEnabled()) ? el : null;
+        });
+
+        // iOS特殊处理：使用W3C标准点击
+        if (driver instanceof IOSDriver) {
+            PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+            Sequence tap = new Sequence(finger, 1);
+            tap.addAction(finger.createPointerMove(
+                    Duration.ofMillis(0),
+                    PointerInput.Origin.viewport(),
+                    element.getLocation().getX() + 10,
+                    element.getLocation().getY() + 10
+            ));
+            tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            tap.addAction(new Pause(finger, Duration.ofMillis(100)));
+            tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+            ((IOSDriver)driver).perform(Collections.singletonList(tap));
+        } else {
+            element.click();
+        }
+    }
+
+//    protected void type(By locator, String text) {
+//        try {
+//            // 1. 等待元素可见且可交互
+//            WebElement element = wait.until(driver -> {
+//                WebElement el = driver.findElement(locator);
+//                return (el.isDisplayed() && el.isEnabled()) ? el : null;
+//            });
+//
+//            // 2. 点击元素确保获取焦点
+//            element.click();
+//            Thread.sleep(300); // 等待键盘弹出
+//
+//            // 3. iOS专用文本输入方式
+//            if (driver instanceof IOSDriver) {
+//                // 方式1: 使用mobile: typeText命令
+//                Map<String, Object> args = new HashMap<>();
+//                args.put("element", ((RemoteWebElement)element).getId());
+//                args.put("text", text);
+//                ((JavascriptExecutor)driver).executeScript("mobile: typeText", args);
+//
+//                // 或者方式2: 使用setValue
+//                // Map<String, Object> params = new HashMap<>();
+//                // params.put("id", ((RemoteWebElement)element).getId());
+//                // params.put("value", text);
+//                // driver.executeScript("mobile: setValue", params);
+//            }
+//            // 4. Android处理
+//            else {
+//                element.clear();
+//                element.sendKeys(text);
+//            }
+//
+//        } catch (Exception e) {
+//            // 备用方案: 尝试直接通过sendKeys
+//            try {
+//                WebElement element = driver.findElement(locator);
+//                element.clear();
+//                element.sendKeys(text);
+//            } catch (Exception ex) {
+//                throw new RuntimeException("所有输入方式均失败: " + ex.getMessage(), ex);
+//            }
+//        }
+//    }
+    // 通用滑动操作（iOS/Android 兼容）
     protected void swipe() {
         ((JavascriptExecutor) driver).executeScript("mobile: swipeGesture", ImmutableMap.of(
-                "left", 840,             // 滑动区域的左边界 x 坐标
-                "top", 1120,             // 滑动区域的上边界 y 坐标
-                "width", 140,            // 滑动区域的宽度
-                "height", 1120,          // 滑动区域的高度
-                "direction", "left",     // 滑动方向为从右往左
-                "percent", 0.95          // 滑动距离占滑动区域宽度的百分比
+                "left", 840,
+                "top", 1120,
+                "width", 140,
+                "height", 1120,
+                "direction", "left",
+                "percent", 0.95
         ));
     }
 
-// 根据元素获取ID进行点击
-//    protected void tap(By element) {
-//        driver.executeScript("mobile: clickGesture", ImmutableMap.of(
-//                "elementId", ((RemoteWebElement) driver.findElement(element)).getId()
-//        ));
-//    }
-
     protected void tap(int x, int y) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("x", x);
-        parameters.put("y", y);
-        driver.executeScript("mobile: clickGesture", parameters);
+        if (driver instanceof IOSDriver) {
+            // iOS 专用方式
+            PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+            Sequence tap = new Sequence(finger, 1);
+            tap.addAction(finger.createPointerMove(Duration.ofMillis(0),
+                    PointerInput.Origin.viewport(), x, y));
+            tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            tap.addAction(new Pause(finger, Duration.ofMillis(100))); // 添加短暂停顿更可靠
+            tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+            ((IOSDriver)driver).perform(Collections.singletonList(tap));
+        } else {
+            // Android 方式
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("x", x);
+            parameters.put("y", y);
+            driver.executeScript("mobile: clickGesture", parameters);
+        }
     }
 
 
